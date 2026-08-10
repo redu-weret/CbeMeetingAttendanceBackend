@@ -1,0 +1,6 @@
+@CbeMeetingAttendance_HostAddress = http://localhost:5150
+
+GET {{CbeMeetingAttendance_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

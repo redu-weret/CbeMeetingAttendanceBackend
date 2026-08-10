@@ -1,0 +1,12 @@
+bin/
+obj/
+.git/
+.vs/
+*.user
+*.suo
+_temp_update.py
+# Secrets and compose config must never be baked into the image
+.env
+docker-compose.yml
+# Local dev uploads must not leak into the image; the profiles-data volume handles persistence
+wwwroot/Profiles/

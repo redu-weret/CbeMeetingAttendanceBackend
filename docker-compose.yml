@@ -1,0 +1,57 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  api:
+    build: .
+    ports:
+      - "5151:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      # Override the appsettings.json connection string (.\\SQLEXPRESS) so the
+      # app inside the container talks to the `db` service. Config, not code.
+      ConnectionStrings__DefaultConnection: "Server=db;Database=CbeMeetingAttendance;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Auto-restart if SQL Server drops a connection during first boot
+    restart: on-failure
+    healthcheck:
+      # curl is not present in the aspnet image; probe the port with bash
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/80' 2>/dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - profiles-data:/app/wwwroot/Profiles
+
+  # React SPA built by Vite, served by Nginx.
+  # /api and /Profiles are reverse-proxied to the api service (see nginx.conf).
+  web:
+    build:
+      # The React app lives in a sibling folder: Desktop\React\CbeMeetingAttendance
+      context: ../React/CbeMeetingAttendance
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  mssql-data:
+  profiles-data:
