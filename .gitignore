@@ -3,3 +3,5 @@ obj/
 .env
 *.user
 *.suo
+# RSA encryption key material — private keys must never be committed
+App_Data/

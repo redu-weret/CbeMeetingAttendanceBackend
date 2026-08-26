@@ -163,6 +163,12 @@ Full feature-by-feature test: follow the API flow in the project README, but use
 - **PDF export:** the image installs Liberation Sans and aliases it as `arial*.ttf` in `/app`
   so PDFsharp's `WindowsFontResolver` works on Linux. PDF export was verified end-to-end.
 - **Profile pictures** persist in the `profiles-data` volume (mounted at `/app/wwwroot/Profiles`).
+- **Payload encryption keys** are generated on first start into `/app/App_Data/Keys`
+  (RSA key pair used for application-level AES-GCM + RSA-OAEP payload encryption).
+  The `keys-data` volume (mounted at `/app/App_Data/Keys`) keeps the key pair stable
+  across container restarts — the RSA **private key never leaves the backend** and the
+  directory is excluded from Git (`.gitignore`) and the image (`.dockerignore`).
+  The public key is served to the web app via `GET /api/security/public-key`.
 - **Data protection keys** for ASP.NET Identity data-protection are stored under
   `/root/.aspnet/DataProtection-Keys` — persisted by the container filesystem (not a volume).
   For production, mount a volume there or configure a key store.

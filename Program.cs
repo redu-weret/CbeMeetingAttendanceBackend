@@ -108,6 +108,10 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+// Application-level payload encryption (hybrid AES-GCM + RSA-OAEP).
+// The RSA private key is generated on first startup and stays on the backend only.
+builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
+
 // Configure Controllers
 builder.Services.AddControllers();
 
@@ -178,6 +182,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+
+// Decrypt marked encrypted request bodies before controllers bind them.
+// Responses are never encrypted. Requests without the marker pass through unchanged.
+app.UseMiddleware<EncryptedRequestBodyMiddleware>();
 
 // Serve uploaded profile pictures from wwwroot/Profiles
 app.UseStaticFiles();

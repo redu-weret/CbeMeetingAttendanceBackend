@@ -37,6 +37,9 @@ services:
       start_period: 10s
     volumes:
       - profiles-data:/app/wwwroot/Profiles
+      # RSA key pair used for payload encryption; persisted so the public key
+      # stays stable across container restarts (private key stays in the container)
+      - keys-data:/app/App_Data/Keys
 
   # React SPA built by Vite, served by Nginx.
   # /api and /Profiles are reverse-proxied to the api service (see nginx.conf).
@@ -55,3 +58,4 @@ services:
 volumes:
   mssql-data:
   profiles-data:
+  keys-data:

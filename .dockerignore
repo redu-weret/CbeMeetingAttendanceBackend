@@ -10,3 +10,5 @@ _temp_update.py
 docker-compose.yml
 # Local dev uploads must not leak into the image; the profiles-data volume handles persistence
 wwwroot/Profiles/
+# RSA encryption key material must never be baked into the image; the keys-data volume handles persistence
+App_Data/
